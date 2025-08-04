@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UPI Payment QR Code Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: linear-gradient(135deg, #d0e5ff 0%, #f0f8ff 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            background: #f0f7fa;
+            padding: 32px 24px;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px #399be61a;
+            width: 340px;
+            max-width: 90vw;
+            border: 2px solid #bae6fd;
+        }
+        .container h2 {
+            margin: 0 0 18px;
+            text-align: center;
+            color: #155e75;
+            letter-spacing: 1px;
+        }
+        label {
+            font-size: 1rem;
+            color: #155e75;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 1.5px solid #7dd3fc;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: #e0f2fe;
+            color: #0c4a6e;
+        }
+        button {
+            background: linear-gradient(90deg, #38bdf8 30%, #a5b4fc 100%);
+            color: #0c4a6e;
+            font-weight: bold;
+            padding: 10px 0;
+            width: 100%;
+            border: none;
+            border-radius: 7px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            box-shadow: 0 2px 10px #38bdf822;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #60a5fa 10%, #bae6fd 90%);
+            color: #075985;
+        }
+        .qr-area {
+            margin-top: 22px;
+            text-align: center;
+        }
+        .qr-area .qr-wrapper {
+            display: inline-block;
+            padding: 13px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #bae6fd, #7dd3fc, #22d3ee, #dbeafe, #60a5fa, #2563eb, #bae6fd);
+            background-size: 250% 250%;
+            animation: gradientMove 3.5s ease-in-out infinite;
+            box-shadow: 0 10px 30px #38bdf840, 0 0 18px 2px #dbeafecc;
+            position: relative;
+        }
+        .qr-area img {
+            border-radius: 13px;
+            background: #f0fdff;
+            padding: 10px;
+            box-shadow: 0 4px 20px #0001;
+            width: 210px;
+            height: 210px;
+            z-index: 1;
+            position: relative;
+            animation: pulse 2s infinite;
+            border: 2px solid #bae6fd;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 #38bdf8cc; }
+            70% { box-shadow: 0 0 0 20px rgba(56,189,248,0.0); }
+            100% { box-shadow: 0 0 0 0 rgba(56,189,248,0.0); }
+        }
+        .qr-area p {
+            font-size: 0.97rem;
+            color: #164e63;
+            margin-top: 6px;
+        }
+        .qr-area code {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 1px 3px;
+            border-radius: 5px;
+            font-size: 0.92em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>UPI QR Code Generator</h2>
+        <label for="upi">Your UPI ID</label>
+        <input id="upi" type="text" placeholder="example@upi" autocomplete="off">
+        <label for="amt">Amount (₹)</label>
+        <input id="amt" type="number" placeholder="100" min="1" autocomplete="off">
+        <button onclick="generateQR()">Generate QR Code</button>
+        <div class="qr-area" id="qr-area"></div>
+    </div>
+<script>
+function escapeUPI(s) {
+    return encodeURIComponent((s||"").trim());
+}
+
+function generateQR() {
+    let upi = document.getElementById('upi').value.trim();
+    let amt = document.getElementById('amt').value.trim();
+    let qrArea = document.getElementById('qr-area');
+    qrArea.innerHTML = "";
+
+    if (!upi || !upi.includes('@')) {
+        qrArea.innerHTML = "<p>Please enter a valid UPI ID.</p>";
+        return;
+    }
+    if (!amt || isNaN(amt) || Number(amt) <= 0) {
+        qrArea.innerHTML = "<p>Please enter a valid amount.</p>";
+        return;
+    }
+
+    let upiUrl = `upi://pay?pa=${escapeUPI(upi)}&am=${escapeUPI(amt)}&pn=UPI%20QR%20Payment`;
+    let qrApi = `https://quickchart.io/qr?text=${encodeURIComponent(upiUrl)}&size=210`;
+
+    qrArea.innerHTML = `
+        <div class="qr-wrapper">
+            <img src="${qrApi}" alt="UPI QR Code">
+        </div>
+        <p>Scan this QR code with any UPI app to pay ₹${Number(amt)} to <b>${upi}</b>.</p>
+        <p style="font-size:0.93em;margin-top:8px;">UPI Link: <br>
+            <code style="user-select:all;word-break:break-all;">${upiUrl}</code>
+        </p>
+    `;
+}
+</script>
+</body>
+</html>
